@@ -1,0 +1,75 @@
+# check if the values in the column is as per the data's description
+
+SELECT
+  DISTINCT fuel_type
+FROM
+  cars.car_info;
+
+# Check for range of the values in a column
+
+SELECT
+  MIN(length) AS min_length,
+  MAX(length) AS max_length
+FROM
+  cars.car_info;
+  
+# Check for Null Values
+
+SELECT * FROM Automobile.car_info
+WHERE 
+  num_of_doors IS NULL;
+
+# if there is a wrong value
+UPDATE
+  cars.car_info
+SET
+  num_of_doors = "four"
+WHERE
+  make = "dodge"
+  AND fuel_type = "gas"
+  AND body_style = "sedan";
+  
+  # Use distict to check if there is any hidden spaces in the column values
+  
+  SELECT
+  DISTINCT drive_wheels,
+  LENGTH(drive_wheels) AS string_length
+  FROM Automobile.car_info;
+
+#use TRIM to remove the extra White spaces in the fields
+#SUBSTR can be used as well
+
+UPDATE
+  cars.car_info
+SET
+  drive_wheels = TRIM(drive_wheels)
+WHERE TRUE;
+
+#Check the Data Type and if wrong do typecasting
+
+ SELECT CAST(purchase_price AS FLOAT64)
+ FROM `hallowed-web-326020.customer_data.Customer_Purchase`
+ order by CAST(purchase_price AS FLOAT64) DESC;
+ 
+# combining to columns to do analysis based on both
+
+SELECT CONCAT(product_code, product_color) AS new_product_code
+FROM `hallowed-web-326020.customer_data.Customer_Purchase`
+WHERE product = 'couch';
+
+# COALESCE to return non-null values for one or more fields.
+#here product code is retured with product is NULL
+
+SELECT COALESCE(product,product_code) AS product_info
+FROM `hallowed-web-326020.customer_data.Customer_Purchase`;
+
+#Use CASE WHEN to conditionaly change mispelled names
+
+SELECT name
+customer_id, 
+    CASE
+        WHEN name = 'Tnoy' THEN 'Tony'
+        WHEN name = 'AdLE' THEN 'Adel'
+        ELSE name
+    END AS cleaned_name
+FROM `hallowed-web-326020.CustomerData.Customer`;
