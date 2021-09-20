@@ -1,0 +1,138 @@
+---------------------------------------------------------------------------
+Aggregation
+---------------------------------------------------------------------
+SELECT 
+    usertype,
+    concat(start_station_name," to ",end_station_name) AS route,
+    count(*) AS num_trips,
+    ROUND(AVG(CAST(tripduration AS int64)/60),2) AS duration
+FROM `bigquery-public-data.new_york_citibike.citibike_trips`
+GROUP BY
+    start_station_name,end_station_name,usertype
+ORDER BY num_trips
+LIMIT 10;
+
+---------------------------------------------------------------------------
+JOIN
+---------------------------------------------------------------------
+SELECT 
+    AVG(edu.value) average_value, summary.region
+FROM 
+    `bigquery-public-data.world_bank_intl_education.international_education` AS edu
+INNER JOIN 
+    `bigquery-public-data.world_bank_intl_education.country_summary` AS summary
+ON edu.country_code = summary.country_code
+WHERE summary.region IS NOT null
+GROUP BY summary.region
+ORDER BY average_value DESC
+
+------------------------------------------------------------
+
+SELECT
+ seasons.market AS university,
+ seasons.name AS team_name,
+ seasons.wins,
+ seasons.losses,
+ seasons.ties,
+ mascots.mascot AS team_mascot
+FROM
+ `bigquery-public-data.ncaa_basketball.mbb_historical_teams_seasons` AS seasons
+LEFT JOIN
+ `bigquery-public-data.ncaa_basketball.mascots` AS mascots
+ON
+ seasons.team_id = mascots.id
+WHERE
+ seasons.season = 1984
+ AND seasons.division = 1
+ORDER BY
+ seasons.market
+------------------------------------------------------------------------
+ SELECT 
+    wh.warehouse_alias,count(ord.order_id) as total_num_orders
+FROM
+    warehouse_orders.Orders as ord
+JOIN
+    warehouse_orders.Warehouse as wh
+ON 
+    ord.warehouse_id = wh.warehouse_id
+GROUP BY wh.warehouse_alias
+order by total_num_orders DESC;
+
+---------------------------------------------------------------------------
+SUB-QUERIES
+---------------------------------------------------------------------------
+
+SELECT
+    start_station_id,
+    tripduration,
+    (SELECT 
+        AVG(tripduration)
+        FROM `bigquery-public-data.new_york_citibike.citibike_trips`) AS avg_trip_duration
+    FROM `bigquery-public-data.new_york_citibike.citibike_trips`;
+----------------------------------------------------------------------------
+
+SELECT 
+    station_id,
+    name,
+    number_of_rides AS number_of_rides_starting_at_station
+FROM 
+    (
+    SELECT 
+        start_station_id,
+        count(*) number_of_rides
+    FROM 
+        `bigquery-public-data.new_york_citibike.citibike_trips`
+    GROUP BY  
+        start_station_id
+    )
+AS station_num_trips
+INNER JOIN
+    bigquery-public-data.new_york_citibike.citibike_stations
+ON station_id = start_station_id
+ORDER BY 
+    number_of_rides DESC;
+    
+------------------------------------------------------------------------------------------
+SELECT 
+    station_id,
+    name
+FROM
+    `bigquery-public-data.new_york_citibike.citibike_stations`
+WHERE
+    station_id IN (  
+        SELECT 
+            start_station_id,
+            FROM 
+                `bigquery-public-data.new_york_citibike.citibike_trips`
+            WHERE usertype = 'Subscriber'
+    )
+
+ -----------------------------------------------------------------------------------------
+ GROUP BY,CASE, SUBQUERIES,JOIN
+------------------------------------------------------------------------------------------
+ 
+SELECT 
+    wh.warehouse_id,
+    CONCAT(wh.state, ':',warehouse_alias) as warehouse_name,
+    COUNT(Ord.order_id) AS number_of_orders,
+    (SELECT
+        COUNT(*)
+        FROM `hallowed-web-326020.warehouse_orders.Orders`
+    ) AS total_orders,
+    CASE
+        WHEN COUNT(Ord.order_id)/(SELECT count(*) FROM `hallowed-web-326020.warehouse_orders.Orders`) <= 0.20
+        THEN 'Fulfilled 0-20% of the orders'
+        WHEN COUNT(Ord.order_id)/(SELECT count(*) FROM `hallowed-web-326020.warehouse_orders.Orders`) > 0.20 AND
+        COUNT(Ord.order_id)/(SELECT count(*) FROM `hallowed-web-326020.warehouse_orders.Orders`) <= 0.60
+        THEN 'Fulfilled 21-60% of the orders'
+        ELSE 'Fulfilled more than 60% of the orders'
+    END AS Fulfilment_summary
+FROM `hallowed-web-326020.warehouse_orders.Warehouse` AS wh
+LEFT JOIN `hallowed-web-326020.warehouse_orders.Orders` as Ord
+    ON wh.warehouse_id = ord.warehouse_id
+GROUP BY 
+    wh.warehouse_id,
+    warehouse_name
+HAVING 
+    COUNT(Ord.order_id)> 0;
+--------------------------------------------------------
