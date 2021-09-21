@@ -136,3 +136,54 @@ GROUP BY
 HAVING 
     COUNT(Ord.order_id)> 0;
 --------------------------------------------------------
+SELECT 
+    Date,
+    region,
+    Small_Bags,
+    Total_Bags,
+    (Small_Bags / Total_Bags) * 100 AS Percent_Small_Bags
+ FROM `hallowed-web-326020.avacado_data.avocado_prices`
+ WHERE Total_Bags <> 0;
+ -------------------------------------------------------------
+ 
+ SELECT 
+    EXTRACT(YEAR FROM starttime) AS year,
+    COUNT(*) AS num_of_rides
+FROM bigquery-public-data.new_york.citibike_trips
+GROUP BY 
+    year
+ORDER BY
+    year ;
+---------------------------------------------------------------
+
+SELECT
+  EXTRACT(YEAR FROM date) AS Year,
+  EXTRACT(MONTH FROM date) AS Month,
+  ProductId,
+  ROUND(MAX(UnitPrice),2) AS UnitPrice,
+  SUM(Quantity) AS UnitsSold
+FROM
+  `hallowed-web-326020.Sales.sales_info`
+GROUP BY
+  Year,
+  Month,
+  ProductId
+ORDER BY
+  Year,
+  Month,
+  ProductId;
+  
+ -------------------------------------------------------------------------
+ TEMPORARY TABLE
+ -------------------------------------------------------------------------
+ WITH trips_over_1_hr AS(
+    SELECT * 
+    FROM citibike_trips
+    WHERE trip_duration>=60
+ )
+ 
+ SELECT COUNT(*) AS cnt
+ FROM trips_over_1_hr;
+ 
+ --------------------------------------------------------------------------
+ 
